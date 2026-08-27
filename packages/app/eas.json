@@ -30,6 +30,28 @@
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease -x lint -x lintVitalAnalyzeRelease -x lintVitalRelease -x generateReleaseLintModel -x generateReleaseLintVitalModel"
       }
+    },
+    "ota-preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "APP_VARIANT": "ota",
+        "XPREM_CHANNEL": "preview"
+      },
+      "android": {
+        "buildType": "apk",
+        "resourceClass": "large"
+      }
+    },
+    "ota-production": {
+      "channel": "production",
+      "env": {
+        "APP_VARIANT": "ota",
+        "XPREM_CHANNEL": "production"
+      },
+      "android": {
+        "resourceClass": "large"
+      }
     }
   },
   "submit": {
@@ -41,6 +63,7 @@
         "track": "production",
         "releaseStatus": "completed"
       }
-    }
+    },
+    "ota-production": {}
   }
 }

@@ -54,6 +54,7 @@ test-results/
 
 # Misc
 *.pem
+!packages/app/certs/xprem-certificate.pem
 .vercel
 
 # Local Claude configuration

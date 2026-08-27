@@ -1,0 +1,50 @@
+name: Build OTA mobile shell
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: EAS build profile
+        required: true
+        default: ota-preview
+        type: choice
+        options:
+          - ota-preview
+          - ota-production
+
+permissions:
+  contents: read
+
+env:
+  APP_VARIANT: ota
+  XPREM_URL: ${{ vars.XPREM_URL }}
+  XPREM_APP_ID: ${{ vars.XPREM_APP_ID }}
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+  ONNXRUNTIME_NODE_INSTALL: skip
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: node scripts/npm-retry.mjs ci
+
+      - name: Build workspace dependencies
+        run: npm run build:app-deps
+
+      - name: Build iOS and Android shells
+        working-directory: packages/app
+        run: |
+          npx eas-cli env:create production --name XPREM_URL --value "$XPREM_URL" --visibility plaintext --force --non-interactive
+          npx eas-cli env:create production --name XPREM_APP_ID --value "$XPREM_APP_ID" --visibility plaintext --force --non-interactive
+          npx eas-cli build --platform all --profile "${{ inputs.profile }}" --non-interactive --no-wait

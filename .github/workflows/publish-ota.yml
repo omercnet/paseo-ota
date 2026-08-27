@@ -1,0 +1,59 @@
+name: Publish OTA update
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: xprem channel and branch
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - production
+      rollout_percentage:
+        description: Initial rollout percentage; blank publishes fully
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  APP_VARIANT: ota
+  XPREM_URL: ${{ vars.XPREM_URL }}
+  XPREM_APP_ID: ${{ vars.XPREM_APP_ID }}
+  XPREM_CHANNEL: ${{ inputs.channel }}
+  EOO_TOKEN: ${{ secrets.XPREM_TOKEN }}
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+  ONNXRUNTIME_NODE_INSTALL: skip
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: node scripts/npm-retry.mjs ci
+
+      - name: Build app dependencies
+        run: npm run build:app-deps
+
+      - name: Publish signed update
+        working-directory: packages/app
+        env:
+          ROLLOUT_PERCENTAGE: ${{ inputs.rollout_percentage }}
+        run: |
+          args=(--branch "$XPREM_CHANNEL" --channel "$XPREM_CHANNEL" --platform all --serverUrl "$XPREM_URL" --nonInteractive)
+          if [[ -n "$ROLLOUT_PERCENTAGE" ]]; then
+            args+=(--rollout-percentage "$ROLLOUT_PERCENTAGE")
+          fi
+          npx eoas publish "${args[@]}"

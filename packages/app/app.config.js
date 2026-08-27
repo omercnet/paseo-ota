@@ -9,6 +9,14 @@ const { getNativeReleaseVersion } = require("./native-release-version");
 const appVariant = process.env.APP_VARIANT ?? "production";
 const isFdroidBuild = process.env.PASEO_FDROID_BUILD === "1";
 const isProfileBuild = process.env.PASEO_PROFILE_BUILD === "1";
+const isOtaBuild = appVariant === "ota";
+const otaUrl = process.env.XPREM_URL?.replace(/\/$/, "");
+const otaAppId = process.env.XPREM_APP_ID;
+const otaChannel = process.env.XPREM_CHANNEL ?? "production";
+
+if (isOtaBuild && (!otaUrl || !otaAppId)) {
+  throw new Error("APP_VARIANT=ota requires XPREM_URL and XPREM_APP_ID");
+}
 
 const buildProfile = isFdroidBuild
   ? {
@@ -77,6 +85,10 @@ const variants = {
       fallbackRelativePath: "./.secrets/GoogleService-Info.prod.plist",
     }),
   },
+  ota: {
+    name: "Paseo OTA",
+    packageId: "net.omerc.paseo.ota",
+  },
   development: {
     name: "Paseo Debug",
     packageId: "sh.paseo.debug",
@@ -101,9 +113,28 @@ export default {
     version: nativeReleaseVersion.appVersion,
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "paseo",
+    scheme: isOtaBuild ? "paseo-ota" : "paseo",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
+    ...(isOtaBuild
+      ? {
+          runtimeVersion: { policy: "fingerprint" },
+          updates: {
+            url: `${otaUrl}/manifest`,
+            requestHeaders: {
+              "expo-app-id": otaAppId,
+              "expo-channel-name": otaChannel,
+            },
+            codeSigningCertificate: "./certs/xprem-certificate.pem",
+            codeSigningMetadata: {
+              keyid: "main",
+              alg: "rsa-v1_5-sha256",
+            },
+            checkAutomatically: "ON_LOAD",
+            fallbackToCacheTimeout: 0,
+          },
+        }
+      : {}),
     ios: {
       supportsTablet: true,
       infoPlist: {
@@ -187,10 +218,14 @@ export default {
       fdroidBuild: isFdroidBuild,
       profileBuild: isProfileBuild,
       router: {},
-      eas: {
-        projectId: "0e7f65ce-0367-46c8-a238-2b65963d235a",
-      },
+      ...(isOtaBuild
+        ? {}
+        : {
+            eas: {
+              projectId: "0e7f65ce-0367-46c8-a238-2b65963d235a",
+            },
+          }),
     },
-    owner: "getpaseo",
+    ...(isOtaBuild ? {} : { owner: "getpaseo" }),
   },
 };

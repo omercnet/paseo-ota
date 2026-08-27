@@ -1,3 +1,32 @@
+> [!IMPORTANT]
+> This is an independent downstream build of Paseo and is not affiliated with or supported by the Paseo maintainers. Its mobile binaries use the distinct `net.omerc.paseo.ota` application ID and receive signed JavaScript updates from a self-hosted xprem server.
+
+## OTA mobile variant
+
+The `ota` app variant follows stable tags from [`getpaseo/paseo`](https://github.com/getpaseo/paseo). Native compatibility is isolated with Expo's fingerprint runtime policy. A tag whose fingerprint matches the installed shell can be published through xprem; native dependency or configuration changes require a new iOS and Android shell.
+
+Repository configuration:
+
+- Variables: `XPREM_URL`, `XPREM_APP_ID`
+- Secrets: `XPREM_TOKEN` (xprem control-plane CLI token), `EXPO_TOKEN` (EAS builds)
+- `packages/app/certs/xprem-certificate.pem` verifies signed update manifests. Keep the matching private key only in xprem's key store.
+
+`Sync upstream tags` checks for new stable tags every six hours and reapplies this repository's commits on top of the newest tag. It runs lint and typecheck before updating `main`. `Publish OTA update` is manual and supports preview or production with an optional progressive rollout. `Build OTA mobile shell` starts matching iOS and Android EAS builds when the native fingerprint changes.
+
+Local commands require the same xprem values:
+
+```bash
+XPREM_URL=https://updates.example.com \
+XPREM_APP_ID=paseo-ota \
+npm run ota:config
+
+XPREM_URL=https://updates.example.com \
+XPREM_APP_ID=paseo-ota \
+XPREM_CHANNEL=preview \
+EOO_TOKEN=... \
+npm run ota:publish -- --branch preview --channel preview --platform all --nonInteractive
+```
+
 <p align="center">
   <img src="packages/website/public/logo.svg" width="64" height="64" alt="Paseo logo">
 </p>
