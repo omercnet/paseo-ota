@@ -35,7 +35,9 @@
     "profile:workspace-tabs": "node ./scripts/profile-workspace-tabs.mjs",
     "deploy:web": "npm run build:web && wrangler pages deploy dist --project-name paseo-app --branch main",
     "build:terminal-webview": "node ./scripts/build-terminal-webview-html.mjs",
-    "build:mermaid-runtime": "node ./src/components/markdown/fence/mermaid/build-runtime.mjs"
+    "build:mermaid-runtime": "node ./src/components/markdown/fence/mermaid/build-runtime.mjs",
+    "ota:config": "cross-env APP_VARIANT=ota expo config --type public",
+    "ota:publish": "cross-env APP_VARIANT=ota npx eoas@3.1.2 publish"
   },
   "dependencies": {
     "@codemirror/commands": "6.10.4",
@@ -97,6 +99,7 @@
     "expo-sharing": "^14.0.8",
     "expo-splash-screen": "~31.0.10",
     "expo-system-ui": "~6.0.7",
+    "expo-updates": "29.0.20",
     "fast-deep-equal": "^3.1.3",
     "htmlparser2": "^12.0.0",
     "i18next": "^26.3.0",
