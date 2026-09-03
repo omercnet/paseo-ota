@@ -148,7 +148,7 @@
     "@vitest/browser-playwright": "^4.1.7",
     "@xterm/headless": "^6.1.0-beta.213",
     "dotenv": "^17.2.3",
-    "eas-cli": "^16.24.1",
+    "eas-cli": "^23.2.0",
     "esbuild": "0.28.1",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
@@ -160,6 +160,6 @@
     "typescript": "~5.9.2",
     "vitest": "^4.1.6",
     "wrangler": "^4.105.0",
-    "ws": "^8.20.0"
+    "ws": "^8.21.0"
   }
 }
